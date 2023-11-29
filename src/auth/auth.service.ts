@@ -30,7 +30,6 @@ export class AuthService {
     const user = await this.usersRepository.findOneBy({
       email:dto.email
     })
-    console.log(user)
 
     if (user){
       throw new UnauthorizedException('user already exists')
