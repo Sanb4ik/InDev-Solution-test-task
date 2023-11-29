@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Tokens } from './types';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import {ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiTags} from "@nestjs/swagger";
 import { Users } from "./entity/user.entity";
 
 @ApiTags("Auth")
