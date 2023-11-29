@@ -1,5 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Tokens } from './types';
@@ -44,8 +43,6 @@ export class AuthController {
     return this.authService.signInLocal(dto)
   }
 
-  // @UseGuards(AuthGuard('jwt'))
-  // @Public()
   @Post('logout')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -57,13 +54,10 @@ export class AuthController {
   @ApiBadRequestResponse({
     description: 'User not logout, because of incorrect jwt token',
   })
-  logout(@Req() req: Request){
-    const user = req.user
-    console.log(user)
-    return this.authService.logout(user['sub'])
+  logout(@GetUserId() userId: number){
+    return this.authService.logout(userId)
   }
 
-  // @UseGuards(AuthGuard('jwt-refresh'))
   @Public()
   @UseGuards(RtGuard)
   @Post('refresh')
@@ -80,8 +74,7 @@ export class AuthController {
   refreshTokens(
     @GetUserId() userId: number,
     @GetUser('refreshToken') refreshToken: string,
-  ){
-    console.log(refreshToken)
+  ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, refreshToken)
   }
 }

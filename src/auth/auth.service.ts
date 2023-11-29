@@ -10,7 +10,6 @@ import { JwtPayload } from './types';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokens } from "./entity/tokens.entity";
 
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,120 +19,43 @@ export class AuthService {
     @Inject(ConfigService) private config: ConfigService
   ) {}
 
-  hashData(data: string){
+  private hashData(data: string){
     return bcrypt.hash(data, 3)
   }
-
-  async signupLocal(dto: AuthDto): Promise<Tokens>{
-
-
-    const user = await this.usersRepository.findOneBy({
-      email:dto.email
-    })
-    const hashPassword = await this.hashData(dto.password)
-
-    if (user){
-      throw new UnauthorizedException('user already exists')
-    }
-
-    const refreshToken = await this.tokensRepository.save({refreshToken: ""})
-
-    const newUser = await this.usersRepository.save({
-        email: dto.email,
-        password: hashPassword,
-        token: refreshToken
-      }
-    );
-
-    const tokens = await this.getTokens(newUser.id, newUser.email)
-    // await this.updateRefreshToken(refreshToken, tokens)
-    const rt_hash = await this.hashData(tokens.refresh_token);
-    await this.tokensRepository.update(refreshToken, {refreshToken: rt_hash});
-
-    return tokens;
+  private async compareSignatures(signature1, signature2): Promise<void> {
+    const compare = await bcrypt.compare(signature1, signature2)
+    if (!compare)
+      throw new UnauthorizedException('Access Denied')
   }
-
-  async signInLocal(dto: AuthDto){ // to come in
-    const user = await this.usersRepository.findOne({
+  private async findUserByEmail(email: string): Promise<Users>{
+    return await this.usersRepository.findOne({
       relations:{
         token: true
       },
       where:{
-        email:dto.email
+        email: email
       }
     })
-
-    if(!user)
-      throw new UnauthorizedException('user does not exists')
-
-    const comparePass = bcrypt.compare(dto.password, user.password)
-    if (!comparePass)
-      throw new UnauthorizedException('invalid password')
-
-    const tokens = await this.getTokens(user.id, user.email)
-    const rt_Hash = await this.hashData(tokens.refresh_token)
-    await this.tokensRepository.update(user.token, {refreshToken: rt_Hash});
-    // await this.updateRefreshToken(user.token, tokens)
-    return tokens
   }
-
-  async logout(userId: number): Promise<Users>{
-
-    const user = await this.usersRepository.findOne({
+  private async findUserById(userId: number): Promise<Users>{
+    return await this.usersRepository.findOne({
       relations:{
-        token:true,
+        token: true
       },
       where:{
-        id:userId
+        id: userId
       }
     })
-
-
-    if (user && user.token) {
-      await this.tokensRepository.update(user.token,{refreshToken: ""});
-    }
-
-    return user
   }
-
-  async refreshTokens(userId: number, rt: string){
-    console.log(userId)
-    const user = await this.usersRepository.findOne({
-      relations:{
-        token:true,
-      },
-      where:{
-        id:userId
-      }
-    })
-
-    console.log(user)
-
-    if (!user || !user.token) throw new ForbiddenException('Access Denied. User not found');
-
-    const rtMatches = await bcrypt.compare(rt,user.token.refreshToken);
-
-    if (!rtMatches) throw new ForbiddenException('Access Denied');
-
-    const tokens = await this.getTokens(user.id, user.email);
+  private async updateRefreshToken( refreshToken, tokens: Tokens): Promise<void>{
     const rt_hash = await this.hashData(tokens.refresh_token);
-    await this.tokensRepository.update(user.token, {refreshToken: rt_hash});
-
-    return tokens;
+    await this.tokensRepository.update(refreshToken, {refreshToken: rt_hash});
   }
-
-  // async updateRefreshToken( refreshToken, tokens: Tokens): Promise<void>{
-  //   const rt_hash = await this.hashData(tokens.refresh_token);
-  //   await this.tokensRepository.update(refreshToken, {refreshToken: rt_hash});
-  // }
-
-  async getTokens(userId: number, email: string): Promise<Tokens> {
-
+  private async getTokens(userId: number, email: string): Promise<Tokens> {
     const jwtPayload: JwtPayload = {
       sub: userId,
       email: email,
     };
-
 
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
@@ -150,5 +72,61 @@ export class AuthService {
       access_token: at,
       refresh_token: rt,
     };
+  }
+
+  async signupLocal(dto: AuthDto): Promise<Tokens>{
+    const user = await this.findUserByEmail(dto.email)
+    const hashPassword = await this.hashData(dto.password)
+
+    if (user){
+      throw new UnauthorizedException('user already exists')
+    }
+    const refreshToken = await this.tokensRepository.save({refreshToken: ""})
+    const newUser = await this.usersRepository.save({
+        email: dto.email,
+        password: hashPassword,
+        token: refreshToken
+      }
+    );
+
+    const tokens = await this.getTokens(newUser.id, newUser.email)
+    await this.updateRefreshToken(refreshToken, tokens)
+
+    return tokens;
+  }
+
+  async signInLocal(dto: AuthDto): Promise<Tokens> { // to come in
+    const user = await this.findUserByEmail(dto.email)
+
+    if(!user)
+      throw new UnauthorizedException('user does not exists')
+
+    await this.compareSignatures(dto.password, user.password)
+
+    const tokens = await this.getTokens(user.id, user.email)
+    await this.updateRefreshToken(user.token, tokens)
+    return tokens
+  }
+
+  async logout(userId: number): Promise<Boolean>{
+    const user = await this.findUserById(userId)
+    if (user && user.token) {
+      await this.tokensRepository.update(user.token,{refreshToken: ""});
+    }
+    return true
+  }
+
+  async refreshTokens(userId: number, rt: string): Promise<Tokens>{
+    const user = await this.findUserById(userId)
+
+    if (!user || !user.token)
+      throw new ForbiddenException('Access Denied. User not found');
+
+    await this.compareSignatures(rt, user.token.refreshToken)
+
+    const tokens = await this.getTokens(user.id, user.email)
+    await this.updateRefreshToken(user.token, tokens)
+
+    return tokens;
   }
 }
