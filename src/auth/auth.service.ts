@@ -25,11 +25,12 @@ export class AuthService {
   }
 
   async signupLocal(dto: AuthDto): Promise<Tokens>{
-    const HashPassword = await this.hashData(dto.password)
+
 
     const user = await this.usersRepository.findOneBy({
       email:dto.email
     })
+    const hashPassword = await this.hashData(dto.password)
 
     if (user){
       throw new UnauthorizedException('user already exists')
@@ -39,12 +40,13 @@ export class AuthService {
 
     const newUser = await this.usersRepository.save({
         email: dto.email,
-        password: HashPassword,
+        password: hashPassword,
         token: refreshToken
       }
     );
 
     const tokens = await this.getTokens(newUser.id, newUser.email)
+    // await this.updateRefreshToken(refreshToken, tokens)
     const rt_hash = await this.hashData(tokens.refresh_token);
     await this.tokensRepository.update(refreshToken, {refreshToken: rt_hash});
 
@@ -71,6 +73,7 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.email)
     const rt_Hash = await this.hashData(tokens.refresh_token)
     await this.tokensRepository.update(user.token, {refreshToken: rt_Hash});
+    // await this.updateRefreshToken(user.token, tokens)
     return tokens
   }
 
@@ -118,6 +121,11 @@ export class AuthService {
 
     return tokens;
   }
+
+  // async updateRefreshToken( refreshToken, tokens: Tokens): Promise<void>{
+  //   const rt_hash = await this.hashData(tokens.refresh_token);
+  //   await this.tokensRepository.update(refreshToken, {refreshToken: rt_hash});
+  // }
 
   async getTokens(userId: number, email: string): Promise<Tokens> {
 
