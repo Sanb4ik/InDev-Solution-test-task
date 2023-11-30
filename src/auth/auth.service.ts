@@ -95,11 +95,11 @@ export class AuthService {
     return tokens;
   }
 
-  async signInLocal(dto: AuthDto): Promise<Tokens> { // to come in
+  async signInLocal(dto: AuthDto): Promise<Tokens> {
     const user = await this.findUserByEmail(dto.email)
 
     if(!user)
-      throw new UnauthorizedException('user does not exists')
+      throw new UnauthorizedException('user does not exist')
 
     await this.compareSignatures(dto.password, user.password)
 

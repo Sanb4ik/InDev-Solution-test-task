@@ -1,10 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity()
 export class RefreshTokens {
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @Column({ nullable: true })
-    refreshToken: string;
+    refreshToken: string
 }

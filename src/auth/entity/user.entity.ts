@@ -1,6 +1,6 @@
-import { RefreshTokens } from "./tokens.entity";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import {ApiProperty} from "@nestjs/swagger";
+import { RefreshTokens } from "./tokens.entity"
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm"
+import {ApiProperty} from "@nestjs/swagger"
 
 @Entity()
 export class Users {
@@ -10,21 +10,21 @@ export class Users {
         type: Number,
         description: "User ID in postgres"
     })
-    id: number;
+    id: number
 
     @ApiProperty({
         type: String,
         description: "User email"
     })
     @Column()
-    email: string;
+    email: string
 
     @ApiProperty({
         type: String,
         description: "User hashed password"
     })
     @Column()
-    password: string;
+    password: string
 
 
     @OneToOne(() => RefreshTokens,{ nullable: true })

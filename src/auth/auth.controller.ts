@@ -2,8 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Tokens } from './types';
-import {ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiTags} from "@nestjs/swagger";
-import { Users } from "./entity/user.entity";
+import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { Public, GetUserId, GetUser } from '../common/decorators';
 import { RtGuard } from '../common/guards';
 
@@ -13,13 +12,16 @@ export class AuthController {
   constructor(private authService: AuthService) {}
   @Public()
   @Post('/local/signup')
-  @ApiBearerAuth()
   @ApiCreatedResponse({
       description: 'User registered successfully',
       type: Tokens
-    }
-  )
+  })
+  @ApiUnauthorizedResponse({
+    status: 401,
+    description: "Unauthorized, user already exists"
+  })
   @ApiBadRequestResponse({
+    status: 400,
     description: 'User not registered, because of incorrect email or zero password',
   })
   @HttpCode(HttpStatus.CREATED)
@@ -29,12 +31,13 @@ export class AuthController {
 
   @Public()
   @Post('/local/signin')
-  @ApiBearerAuth()
-  @ApiCreatedResponse({
+  @ApiOkResponse({
       description: 'User logged successfully',
       type: Tokens
-    }
-  )
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized, user does not exist"
+  })
   @ApiBadRequestResponse({
     description: 'User not logged, because of incorrect email or password',
   })
@@ -44,37 +47,36 @@ export class AuthController {
   }
 
   @Post('logout')
-  @ApiBearerAuth()
+  @ApiBearerAuth('jwt')
   @HttpCode(HttpStatus.OK)
-  @ApiCreatedResponse({
+  @ApiOkResponse({
       description: 'User logout successfully',
-      type: Users
-    }
-  )
-  @ApiBadRequestResponse({
-    description: 'User not logout, because of incorrect jwt token',
+      type: Boolean
   })
-  logout(@GetUserId() userId: number){
+  @ApiUnauthorizedResponse({
+      description: 'User not logged out due to incorrect jwt access token'
+  })
+  logout(@GetUserId() userId: number): Promise<Boolean>{
     return this.authService.logout(userId)
   }
 
   @Public()
   @UseGuards(RtGuard)
   @Post('refresh')
-  @ApiBearerAuth()
+  @ApiBearerAuth('refresh-jwt')
   @HttpCode(HttpStatus.OK)
-  @ApiCreatedResponse({
+  @ApiOkResponse({
       description: 'User have refresh token successfully',
       type: Tokens
-    }
-  )
-  @ApiBadRequestResponse({
+  })
+  @ApiUnauthorizedResponse({
     description: 'User not have, because of incorrect refresh token',
   })
   refreshTokens(
-    @GetUserId() userId: number,
-    @GetUser('refreshToken') refreshToken: string,
-  ): Promise<Tokens> {
+      @GetUserId() userId: number,
+      @GetUser('refreshToken')
+      refreshToken: string,
+    ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, refreshToken)
   }
 }

@@ -5,11 +5,11 @@ export class Tokens {
         type: String,
         description: "access token"
     })
-    access_token: string;
+    access_token: string
 
     @ApiProperty({
         type: String,
         description: "refresh token"
     })
-    refresh_token: string;
+    refresh_token: string
 }

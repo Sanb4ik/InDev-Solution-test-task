@@ -10,4 +10,4 @@ export const configuration = () => ({
         secret: process.env.REFRESH_SECRET_KEY,
         expiresIn: process.env.JWT_RT_EXPIRES_IN,
       }
-});
+})

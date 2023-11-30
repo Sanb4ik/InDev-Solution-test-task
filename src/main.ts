@@ -7,12 +7,7 @@ async function main() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
 
-  const config = new DocumentBuilder()
-    .setTitle('InDev Solutions')
-    .setDescription('The DevEvent API description')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  const config = makeSwaggerConfig()
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
@@ -20,3 +15,27 @@ async function main() {
   await app.listen(3000);
 }
 main();
+
+function makeSwaggerConfig() {
+  return new DocumentBuilder()
+    .setTitle('InDev Solutions')
+    .setDescription('The DevEvent API description')
+    .setVersion('1.0')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'JWT',
+      description: 'Enter access JWT token',
+      in: 'header',
+    }, 'jwt')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'JWT',
+      description: 'Enter refresh JWT token',
+      in: 'header',
+    }, 'refresh-jwt')
+    .build();
+}
