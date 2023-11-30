@@ -2,7 +2,15 @@ import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs
 import { AuthService } from './auth.service'
 import { AuthDto } from './dto/auth.dto'
 import { Tokens } from './types'
-import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger"
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse
+} from "@nestjs/swagger";
 import { Public, GetUserId, GetUser } from '../common/decorators'
 import { RtGuard } from '../common/guards'
 
@@ -22,7 +30,7 @@ export class AuthController {
   })
   @ApiBadRequestResponse({
     status: 400,
-    description: 'User not registered, because of incorrect email or zero password',
+    description: 'User did not register, because of incorrect email or zero password',
   })
   @HttpCode(HttpStatus.CREATED)
   signupLocal(@Body() dto: AuthDto): Promise<Tokens>{
@@ -39,7 +47,7 @@ export class AuthController {
     description: "Unauthorized, user does not exist"
   })
   @ApiBadRequestResponse({
-    description: 'User not logged, because of incorrect email or password',
+    description: 'User did not signin, because the invalid email or password',
   })
   @HttpCode(HttpStatus.OK)
   signInLocal(@Body() dto: AuthDto){
@@ -54,7 +62,7 @@ export class AuthController {
       type: Boolean
   })
   @ApiUnauthorizedResponse({
-      description: 'User not logged out due to incorrect jwt access token'
+      description: 'User did not log out, because the invalid access token'
   })
   logout(@GetUserId() userId: number): Promise<Boolean>{
     return this.authService.logout(userId)
@@ -70,7 +78,7 @@ export class AuthController {
       type: Tokens
   })
   @ApiUnauthorizedResponse({
-    description: 'User not have, because of incorrect refresh token',
+    description: 'User did not receive new tokens, because the invalid refresh token',
   })
   refreshTokens(
       @GetUserId() userId: number,
@@ -78,5 +86,22 @@ export class AuthController {
       refreshToken: string,
     ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, refreshToken)
+  }
+
+  @Post('/reset-password')
+  @ApiBearerAuth('jwt')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    description: 'User changed password successfully',
+    type: Tokens
+  })
+  @ApiForbiddenResponse({
+    description: 'User did not change password, because the invalid email token'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'User not have, because the invalid access token',
+  })
+  resetPassword(@GetUserId() userId: number, @Body() dto: AuthDto): Promise<Tokens>{
+    return this.authService.resetPassword(userId, dto)
   }
 }

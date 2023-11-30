@@ -109,6 +109,19 @@ export class AuthService {
     return true
   }
 
+  async resetPassword(userId: number, dto: AuthDto): Promise<Tokens>{
+    const user = await this.findUserByIdWithRt(userId)
+    if (user.email === dto.email){
+      const hashPassword = await hashString(dto.password)
+      await this.usersRepository.update(user,{password: hashPassword})
+      const tokens = await this.getTokens(user.id, user.email)
+      await this.updateRefreshToken(user.token, tokens)
+      return tokens
+    }
+    else
+      throw new ForbiddenException('Access Denied. User not found')
+  }
+
   async refreshTokens(userId: number, rt: string): Promise<Tokens>{
     const user = await this.findUserByIdWithRt(userId)
 
