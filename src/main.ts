@@ -19,7 +19,7 @@ main();
 function makeSwaggerConfig() {
   return new DocumentBuilder()
     .setTitle('InDev Solutions')
-    .setDescription('The DevEvent API description')
+    .setDescription('It is JWT auth API description')
     .setVersion('1.0')
     .addBearerAuth({
       type: 'http',

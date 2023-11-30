@@ -5,69 +5,40 @@
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+## Installation and Start
 
 ```bash
-$ npm install
+$ docker compose up
 ```
 
-## Running the app
+## Подключение pgAdmin4
+Чтобы подключиться к серверу PostgreSQL из PgAdmin, нам нужно создать объект сервера в PgAdmin с подробной информацией о сервере PostgreSQL.
 
-```bash
-# development
-$ npm run start
+Вот шаги по созданию сервера в PgAdmin:
 
-# watch mode
-$ npm run start:dev
+Откройте PgAdmin в веб-браузере, посетив http://localhost:5050 (при условии, что мы используем конфигурацию по умолчанию в docker-compose.ymlфайле).
+Войдите, используя свой адрес электронной почты и пароль (admin@admin.com pgadmin4), указанные в docker-compose.yml файле сервиса pgadmin.
+На левой боковой панели нажмите Servers, чтобы развернуть Servers меню.
+Щелкните правой кнопкой мыши Servers и выберите Register-> Server.
+На General вкладке диалога Create - Server мы можем дать серверу имя по нашему выбору.
+Во Connection вкладке заполните следующие данные:
 
-# production mode
-$ npm run start:prod
-```
+Имя/адрес хоста: db
 
-## Test
+Порт: 5432
 
-```bash
-# unit tests
-$ npm run test
+База данных обслуживания: postgres
 
-# e2e tests
-$ npm run test:e2e
+Имя пользователя: postgres
 
-# test coverage
-$ npm run test:cov
-```
+Пароль: postgres
 
-## Support
+Нажмите Save, чтобы сохранить конфигурацию сервера postgres.
+## Работа с Swagger
+Откройте веб-браузер, затем откройте http://localhost:3000/api 
+Обратите внимание, что для маршута 'api/auth/logout' используется access_token, а для маршута 'api/auth/refresh' используется refresh_token.
+## P.s.
+Даннуюлогику аутентификации я уже реализовыввал в одном из своих pet проектов, но не использовал свои декораторы, для получения userId and userData и  не использовал Docker : ) https://github.com/Sanb4ik/EventMakers/tree/feature/subscribers
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).

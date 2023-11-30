@@ -1,17 +1,17 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dto';
-import { Tokens } from './types';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
-import { Public, GetUserId, GetUser } from '../common/decorators';
-import { RtGuard } from '../common/guards';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
+import { AuthService } from './auth.service'
+import { AuthDto } from './dto/auth.dto'
+import { Tokens } from './types'
+import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger"
+import { Public, GetUserId, GetUser } from '../common/decorators'
+import { RtGuard } from '../common/guards'
 
 @ApiTags("Auth")
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Public()
-  @Post('/local/signup')
+  @Post('/signup')
   @ApiCreatedResponse({
       description: 'User registered successfully',
       type: Tokens
@@ -30,7 +30,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('/local/signin')
+  @Post('/signin')
   @ApiOkResponse({
       description: 'User logged successfully',
       type: Tokens
@@ -46,7 +46,7 @@ export class AuthController {
     return this.authService.signInLocal(dto)
   }
 
-  @Post('logout')
+  @Post('/logout')
   @ApiBearerAuth('jwt')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -62,7 +62,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(RtGuard)
-  @Post('refresh')
+  @Post('/refresh')
   @ApiBearerAuth('refresh-jwt')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
